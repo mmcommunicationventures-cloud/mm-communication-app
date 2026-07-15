@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="description" content="M&M Communication - Mobile App">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <title>M&M Communication</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            color: #000000;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        body.dark-mode .top-bar {
+            background: #2a2a2a;
+            border-bottom-color: #444;
+        }
+
+        .app-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 100%;
+            height: calc(100vh - 120px);
+            overflow-y: auto;
+            padding-bottom: 60px;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Home Feed */
+        .feed-item {
+            padding: 16px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+        }
+
+        body.dark-mode .feed-item {
+            border-bottom-color: #333;
+        }
+
+        .feed-item:hover {
+            background: #f9f9f9;
+        }
+
+        body.dark-mode .feed-item:hover {
+            background: #222;
+        }
+
+        .feed-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feed-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        body.dark-mode .feed-subtitle {
+            color: #aaa;
+        }
+
+        /* Course Grid */
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .course-card {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        body.dark-mode .course-card {
+            background: #2a2a2a;
+        }
+
+        .course-card:hover {
+            transform: scale(1.05);
+        }
+
+        .course-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .course-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Button */
+        .btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin: 8px;
+        }
+
+        .btn:hover {
+            background: #0051d5;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #000;
+        }
+
+        body.dark-mode .btn-secondary {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #cccccc;
+        }
+
+        /* Modal/Sheet */
+        .modal {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 16px 16px 0 0;
+            z-index: 1000;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+        }
+
+        body.dark-mode .modal {
+            background: #2a2a2a;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            padding: 16px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        body.dark-mode .modal-header {
+            border-bottom-color: #333;
+        }
+
+        .modal-content {
+            padding: 16px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Tab Bar */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            background: #f5f5f5;
+            border-top: 1px solid #e0e0e0;
+            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 99;
+        }
+
+        body.dark-mode .tab-bar {
+            background: #2a2a2a;
+            border-top-color: #333;
+        }
+
+        .tab-item {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 24px;
+            color: #999;
+            transition: color 0.2s;
+        }
+
+        .tab-item.active {
+            color: #007AFF;
+        }
+
+        .tab-label {
+            display: block;
+            font-size: 10px;
+            margin-top: 4px;
+        }
+
+        /* Overlay */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 16px;
+            right: 16px;
+            background: #333;
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            z-index: 2000;
+            animation: slideUp 0.3s;
+        }
+
+        /* Form */
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        body.dark-mode input,
+        body.dark-mode textarea {
+            background: #333;
+            border-color: #444;
+            color: #fff;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .course-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="app-title">M&M Communication</div>
+        <button class="theme-toggle" id="themeToggle">🌙</button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Home Screen -->
+        <div class="screen active" id="homeScreen">
+            <div class="feed-item" onclick="showModal('courseDetail')">
+                <div class="feed-title">New Course Launch</div>
+                <div class="feed-subtitle">Check out our latest professional development program</div>
+            </div>
+            <div class="feed-item" onclick="showModal('announcement')">
+                <div class="feed-title">Upcoming Webinar</div>
+                <div class="feed-subtitle">Learn communication strategies for modern business</div>
+            </div>
+            <div class="feed-item">
+                <div class="feed-title">Community Update</div>
+                <div class="feed-subtitle">Join our growing network of professionals</div>
+            </div>
+        </div>
+
+        <!-- Courses Screen -->
+        <div class="screen" id="coursesScreen">
+            <div class="course-grid">
+                <div class="course-card" onclick="showModal('courseDetail')">
+                    <div class="course-icon">📱</div>
+                    <div class="course-name">Digital Marketing</div>
+                </div>
+                <div class="course-card" onclick="showModal('courseDetail')">
+                    <div class="course-icon">💼</div>
+                    <div class="course-name">Business Skills</div>
+                </div>
+                <div class="course-card" onclick="showModal('courseDetail')">
+                    <div class="course-icon">🎤</div>
+                    <div class="course-name">Public Speaking</div>
+                </div>
+                <div class="course-card" onclick="showModal('courseDetail')">
+                    <div class="course-icon">✍️</div>
+                    <div class="course-name">Content Writing</div>
+                </div>
+                <div class="course-card" onclick="showModal('courseDetail')">
+                    <div class="course-icon">📊</div>
+                    <div class="course-name">Data Analytics</div>
+                </div>
+                <div class="course-card" onclick="showModal('courseDetail')">
+                    <div class="course-icon">🌐</div>
+                    <div class="course-name">Web Development</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Screen -->
+        <div class="screen" id="teamScreen">
+            <div style="padding: 16px;">
+                <h2 style="margin-bottom: 16px;">Meet Our Team</h2>
+                <div class="feed-item">
+                    <div class="feed-title">John Doe</div>
+                    <div class="feed-subtitle">Founder & CEO</div>
+                </div>
+                <div class="feed-item">
+                    <div class="feed-title">Jane Smith</div>
+                    <div class="feed-subtitle">Head of Courses</div>
+                </div>
+                <div class="feed-item">
+                    <div class="feed-title">Mike Johnson</div>
+                    <div class="feed-subtitle">Community Manager</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Screen -->
+        <div class="screen" id="faqScreen">
+            <div style="padding: 16px;">
+                <h2 style="margin-bottom: 16px;">Frequently Asked Questions</h2>
+                <div class="feed-item" onclick="toggleFaq(this)">
+                    <div class="feed-title">How do I enroll in a course?</div>
+                    <div class="feed-subtitle" style="display:none; margin-top: 8px;">Click "Enroll Now" on any course card to get started.</div>
+                </div>
+                <div class="feed-item" onclick="toggleFaq(this)">
+                    <div class="feed-title">What payment methods do you accept?</div>
+                    <div class="feed-subtitle" style="display:none; margin-top: 8px;">We accept all major payment methods through our secure payment gateway.</div>
+                </div>
+                <div class="feed-item" onclick="toggleFaq(this)">
+                    <div class="feed-title">Can I get a refund?</div>
+                    <div class="feed-subtitle" style="display:none; margin-top: 8px;">Yes, we offer a 14-day money-back guarantee on all courses.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Screen -->
+        <div class="screen" id="contactScreen">
+            <div style="padding: 16px;">
+                <h2 style="margin-bottom: 16px;">Contact Us</h2>
+                <form onsubmit="handleContactSubmit(event)">
+                    <input type="text" placeholder="Your Name" required>
+                    <input type="email" placeholder="Your Email" required>
+                    <textarea placeholder="Your Message" rows="6" required></textarea>
+                    <button type="submit" class="btn" style="width: calc(100% - 16px);">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div class="overlay" id="overlay" onclick="closeModal()"></div>
+
+    <!-- Course Detail Modal -->
+    <div class="modal" id="courseDetail">
+        <div class="modal-header">
+            <h3>Course Details</h3>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-content">
+            <div class="course-icon" style="font-size: 48px; text-align: center; margin-bottom: 16px;">📱</div>
+            <h4 style="margin-bottom: 8px;">Professional Communication Masterclass</h4>
+            <p style="margin-bottom: 16px; color: #666;">Learn advanced communication strategies and techniques to excel in your career.</p>
+            <p style="margin-bottom: 16px;"><strong>Duration:</strong> 8 weeks</p>
+            <p style="margin-bottom: 16px;"><strong>Price:</strong> ₦25,000</p>
+            <button class="btn" onclick="handleEnroll()" style="width: calc(100% - 16px);">Enroll Now</button>
+        </div>
+    </div>
+
+    <!-- Announcement Modal -->
+    <div class="modal" id="announcement">
+        <div class="modal-header">
+            <h3>Announcement</h3>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-content">
+            <h4 style="margin-bottom: 8px;">Join Our Next Webinar</h4>
+            <p style="margin-bottom: 16px;">Learn practical communication strategies for modern business environments.</p>
+            <p style="margin-bottom: 16px;"><strong>Date:</strong> July 20, 2024</p>
+            <p style="margin-bottom: 16px;"><strong>Time:</strong> 2:00 PM WAT</p>
+            <button class="btn" style="width: calc(100% - 16px);">Register</button>
+        </div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+        <button class="tab-item active" onclick="switchTab('home')" title="Home">
+            🏠
+            <span class="tab-label">Home</span>
+        </button>
+        <button class="tab-item" onclick="switchTab('courses')" title="Courses">
+            📚
+            <span class="tab-label">Courses</span>
+        </button>
+        <button class="tab-item" onclick="switchTab('team')" title="Team">
+            👥
+            <span class="tab-label">Team</span>
+        </button>
+        <button class="tab-item" onclick="switchTab('faq')" title="FAQ">
+            ❓
+            <span class="tab-label">FAQ</span>
+        </button>
+        <button class="tab-item" onclick="switchTab('contact')" title="Contact">
+            ✉️
+            <span class="tab-label">Contact</span>
+        </button>
+    </div>
+
+    <script>
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(reg => {
+                console.log('Service Worker registered');
+            }).catch(err => {
+                console.log('Service Worker registration failed:', err);
+            });
+        }
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeToggle.textContent = '☀️';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            themeToggle.textContent = isDark ? '☀️' : '🌙';
+        });
+
+        // Tab Navigation
+        function switchTab(tabName) {
+            const screens = document.querySelectorAll('.screen');
+            const tabs = document.querySelectorAll('.tab-item');
+            
+            screens.forEach(screen => screen.classList.remove('active'));
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            const tabMap = {
+                'home': 'homeScreen',
+                'courses': 'coursesScreen',
+                'team': 'teamScreen',
+                'faq': 'faqScreen',
+                'contact': 'contactScreen'
+            };
+            
+            document.getElementById(tabMap[tabName]).classList.add('active');
+            event.target.closest('.tab-item').classList.add('active');
+        }
+
+        // Modal Management
+        function showModal(modalId) {
+            document.getElementById('overlay').classList.add('active');
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('overlay').classList.remove('active');
+            document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+        }
+
+        // Handle Enrollment - WhatsApp Integration
+        function handleEnroll() {
+            const phoneNumber = '2347035052023'; // Nigerian format
+            const message = 'Hi! I want to enroll in your Professional Communication Masterclass course.';
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            window.location.href = whatsappUrl;
+        }
+
+        // Handle Contact Form - Formspree Integration
+        function handleContactSubmit(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                name: formData.get('name') || e.target.querySelector('input[type="text"]').value,
+                email: formData.get('email') || e.target.querySelector('input[type="email"]').value,
+                message: formData.get('message') || e.target.querySelector('textarea').value
+            };
+
+            // Send to Formspree
+            fetch('https://formspree.io/f/xyzgqdvn', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: data.name,
+                    email: data.email,
+                    message: data.message
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    showToast('📨 Message sent! We\'ll get back to you soon.');
+                    e.target.reset();
+                } else {
+                    showToast('❌ Error sending message. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('❌ Error sending message. Please try again.');
+            });
+        }
+
+        function toggleFaq(element) {
+            const subtitle = element.querySelector('.feed-subtitle');
+            subtitle.style.display = subtitle.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
